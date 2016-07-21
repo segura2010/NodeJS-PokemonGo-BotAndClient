@@ -11,14 +11,14 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "async": "^1.5.2",
-    "express": "^4.13.3",
-    "pokemon-go-node-api": "^1.2.2",
-    "request": "^2.69.0"
+    "async": "*",
+    "express": "*",
+    "pokemon-go-node-api": "^1.2.7",
+    "request": "*"
   },
   "devDependencies": {},
   "optionalDependencies": {},
   "engines": {
-    "node": "0.10.13"
+    "node": "6.3.0"
   }
 }

@@ -3,8 +3,8 @@
 var PORT = process.env.PORT || 3000;
 var URI = process.env.URI || "localhost";
 
-var USERNAME = process.env.USERNAME || "0";
-var PASSWORD = process.env.PASSWORD || "0";
+var USERNAME = process.env.USERNAME || "";
+var PASSWORD = process.env.PASSWORD || "";
 var PROVIDER = process.env.PROVIDER || "google";
 
 // Libs for HTTP Server (Web)
@@ -36,11 +36,14 @@ app.get('/api/start/:lng/:lat', function(req, res){
 
     var location = {
         type: 'coords',
-        latitude: req.params.lat,
-        longitude: req.params.lng
+        coords:
+        {
+            latitude: req.params.lat,
+            longitude: req.params.lng
+        }
     };
 
-    Pokeio.init(USERNAME, PASSWORD, location, provider, function(err) {
+    Pokeio.init(USERNAME, PASSWORD, location, PROVIDER, function(err) {
         if (err) throw err;
 
         console.log('[i] Current location: ' + Pokeio.playerInfo.locationName);
@@ -60,6 +63,9 @@ app.get('/api/start/:lng/:lat', function(req, res){
 
             console.log('[i] Pokecoin: ' + poke);
             console.log('[i] Stardust: ' + profile.currency[1].amount);
+
+            console.log('[i] Getting PokeStops...');
+            Pokeio.GetPokeStops();
 
         });
     });

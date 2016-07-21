@@ -61,3 +61,17 @@ function getRoute(start, end)
 	});
 }
 
+
+
+function startBot()
+{
+	var lng = localStorage.getItem("lng");
+	var lat = localStorage.getItem("lat");
+
+	$.get("/api/start/"+lng+"/"+lat, function(res){
+		console.log(err);
+		console.log(res);
+	});
+}
+
+
