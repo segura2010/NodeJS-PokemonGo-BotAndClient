@@ -1,6 +1,7 @@
 
 
 var MAP  = null;
+var directionsService = null;
 
 
 function initMap() {
@@ -11,7 +12,14 @@ function initMap() {
 	});
 	*/
 
-	updateLocation();
+	getLocation(function(pos){
+		var lng = pos.coords.longitude;
+		var lat = pos.coords.latitude;
+
+		localStorage.setItem("lng", lng);
+		localStorage.setItem("lat", lat);
+		showMap(lat, lng);
+	});
 }
 
 function updateLocation()
@@ -43,25 +51,57 @@ function showMap(lat, lng)
 	  center: {lat: lat, lng: lng},
 	  zoom: 19
 	});
+	// Add map events
+	google.maps.event.addListener(MAP, 'click', function(evt) {
+		
+		var sure = confirm("Do you want to go?");
+		if(sure)
+		{
+			var lat = evt.latLng.lat();
+			var lng = evt.latLng.lng();
+			
+			var actlng = localStorage.getItem("lng");
+			var actlat = localStorage.getItem("lat");
+			var start = new google.maps.LatLng(actlat, actlng);
+			var end = evt.latLng;
+			getRoute(start, end, function(points){
+				console.log(points);
+				walkTo(points);
+			});
+		}
+	});
 	var marker = new google.maps.Marker({
 		position: {lat: lat, lng: lng},
 		label: "",
 		map: MAP
 	});
+	directionsService = new google.maps.DirectionsService();
 }
 
 
-function getRoute(start, end)
+function getRoute(start, end, cb)
 {
 	var request = {
 		origin:start,
 		destination:end,
-		travelMode: google.maps.TravelMode.DRIVING
+		travelMode: google.maps.TravelMode.WALKING
 	};
 	directionsService.route(request, function(response, status) {
 		if (status == google.maps.DirectionsStatus.OK)
 		{
 			console.log(status);
+
+			console.log(response);
+
+			var points = response.routes[0].overview_path;
+			var returnPoints = [];
+			for(p in points)
+			{
+				console.log( points[p].lng(), points[p].lat() );
+				returnPoints.push({lng:points[p].lng(), lat:points[p].lat()});
+			}
+
+			cb( returnPoints );
 		}
 	});
 }
@@ -113,6 +153,13 @@ function getNearbyPokemons()
 		{
 			addPokemonToMap(pokemons[p].pokedexinfo.img, pokemons[p].pokedexinfo.name, pokemons[p].location.Longitude, pokemons[p].location.Latitude);
 		}
+	});
+}
+
+
+function walkTo(points)
+{
+	$.post("/api/walk", function(res){
 	});
 }
 

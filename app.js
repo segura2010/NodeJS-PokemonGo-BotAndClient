@@ -136,3 +136,57 @@ app.get('/api/nearbypokemons/:lng/:lat', (req, res) => {
 });
 
 
+app.post('/api/walk', (req, res) => {
+
+    console.log("GO")
+    // test
+    var points = [{lng: -2.7708700000000004, lat: 37.49239}, {lng: -2.7707300000000004, lat: 37.49215}, {lng: -2.7705100000000003, lat: 37.492200000000004}, {lng: -2.7701000000000002, lat: 37.49224}, {lng: -2.7699900000000004, lat: 37.492250000000006}, {lng: -2.7699300000000004, lat: 37.492250000000006}, {lng: -2.7699200000000004, lat: 37.492340000000006}, {lng: -2.7699100000000003, lat: 37.49255}, {lng: -2.7698600000000004, lat: 37.49255}];
+
+    async.eachSeries(points, (p, cb)=>{
+        console.log("Going to ", p);
+
+        var location = {
+            type: 'coords',
+            coords:
+            {
+                latitude: parseFloat(p.lat),
+                longitude: parseFloat(p.lng)
+            }
+        };
+
+        Pokeio.SetLocation(location, (err) => {
+            if (err) throw err;
+
+            Pokeio.Heartbeat(function(err,hb) {
+                if(err)
+                {
+                    console.log(err);
+                }
+
+                var nearbyPokemons = [];
+                for (var i = hb.cells.length - 1; i >= 0; i--)
+                {
+                    for (var j = hb.cells[i].NearbyPokemon.length - 1; j >= 0; j--)
+                    {
+                        //console.log(Pokeio.pokemonlist[0])
+                        var pokemon = Pokeio.pokemonlist[parseInt(hb.cells[i].NearbyPokemon[j].PokedexNumber)-1]
+                        console.log('[+] There is a ' + pokemon.name + ' at ' + hb.cells[i].NearbyPokemon[j].DistanceMeters.toString() + ' meters')
+                        // Set pokedex info
+                        hb.cells[i].NearbyPokemon[j].pokedexinfo = pokemon;
+                        hb.cells[i].NearbyPokemon[j].location = hb.cells[i].DecimatedSpawnPoint[0];
+                        nearbyPokemons.push(hb.cells[i].NearbyPokemon[j]);
+                    }
+                }
+
+                cb();
+
+            });
+        });
+
+    }, ()=>{
+        console.log("OK!");
+        res.send("OK");
+    });
+
+});
+
