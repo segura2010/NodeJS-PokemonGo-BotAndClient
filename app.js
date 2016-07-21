@@ -3,8 +3,8 @@
 var PORT = process.env.PORT || 3000;
 var URI = process.env.URI || "localhost";
 
-var USERNAME = process.env.USERNAME || "";
-var PASSWORD = process.env.PASSWORD || "";
+var USERNAME = process.env.POKEMON_USERNAME || "";
+var PASSWORD = process.env.POKEMON_PASSWORD || "";
 var PROVIDER = process.env.PROVIDER || "google";
 
 // Libs for HTTP Server (Web)
@@ -30,26 +30,29 @@ http.listen(PORT, function(){
 });
 
 
+
+
+
 // Initialize PokemonGo
 
-app.get('/api/start/:lng/:lat', function(req, res){
+app.get('/api/start/:lng/:lat', (req, res) => {
 
     var location = {
         type: 'coords',
         coords:
         {
-            latitude: req.params.lat,
-            longitude: req.params.lng
+            latitude: parseFloat(req.params.lat),
+            longitude: parseFloat(req.params.lng)
         }
     };
 
-    Pokeio.init(USERNAME, PASSWORD, location, PROVIDER, function(err) {
+    Pokeio.init(USERNAME, PASSWORD, location, PROVIDER, (err) => {
         if (err) throw err;
 
         console.log('[i] Current location: ' + Pokeio.playerInfo.locationName);
         console.log('[i] lat/long/alt: ' + Pokeio.playerInfo.latitude + ' ' + Pokeio.playerInfo.longitude + ' ' + Pokeio.playerInfo.altitude);
 
-        Pokeio.GetProfile(function(err, profile) {
+        Pokeio.GetProfile((err, profile) => {
             if (err) throw err;
 
             console.log('[i] Username: ' + profile.username);
@@ -64,8 +67,68 @@ app.get('/api/start/:lng/:lat', function(req, res){
             console.log('[i] Pokecoin: ' + poke);
             console.log('[i] Stardust: ' + profile.currency[1].amount);
 
-            console.log('[i] Getting PokeStops...');
-            Pokeio.GetPokeStops();
+            Pokeio.Heartbeat(function(err,hb) {
+                if(err)
+                {
+                    console.log(err);
+                }
+
+                for (var i = hb.cells.length - 1; i >= 0; i--)
+                {
+                    if(hb.cells[i].NearbyPokemon[0])
+                    {
+                        //console.log(Pokeio.pokemonlist[0])
+                        var pokemon = Pokeio.pokemonlist[parseInt(hb.cells[i].NearbyPokemon[0].PokedexNumber)-1]
+                        console.log('[+] There is a ' + pokemon.name + ' at ' + hb.cells[i].NearbyPokemon[0].DistanceMeters.toString() + ' meters')
+                    }
+                }
+
+                res.json(hb);
+
+            });
+
+        });
+    })
+
+});
+
+
+app.get('/api/nearbypokemons/:lng/:lat', (req, res) => {
+
+    var location = {
+        type: 'coords',
+        coords:
+        {
+            latitude: parseFloat(req.params.lat),
+            longitude: parseFloat(req.params.lng)
+        }
+    };
+
+    Pokeio.SetLocation(location, (err) => {
+        if (err) throw err;
+
+        Pokeio.Heartbeat(function(err,hb) {
+            if(err)
+            {
+                console.log(err);
+            }
+
+            var nearbyPokemons = [];
+            for (var i = hb.cells.length - 1; i >= 0; i--)
+            {
+                for (var j = hb.cells[i].NearbyPokemon.length - 1; j >= 0; j--)
+                {
+                    //console.log(Pokeio.pokemonlist[0])
+                    var pokemon = Pokeio.pokemonlist[parseInt(hb.cells[i].NearbyPokemon[j].PokedexNumber)-1]
+                    console.log('[+] There is a ' + pokemon.name + ' at ' + hb.cells[i].NearbyPokemon[j].DistanceMeters.toString() + ' meters')
+                    // Set pokedex info
+                    hb.cells[i].NearbyPokemon[j].pokedexinfo = pokemon;
+                    hb.cells[i].NearbyPokemon[j].location = hb.cells[i].DecimatedSpawnPoint[0];
+                    nearbyPokemons.push(hb.cells[i].NearbyPokemon[j]);
+                }
+            }
+
+            res.json(nearbyPokemons);
 
         });
     });
