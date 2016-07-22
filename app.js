@@ -32,15 +32,25 @@ http.listen(PORT, function(){
 	console.log('listening on *:'+ PORT);
 });
 
+var inProgressEncounters = []; // to save encounters
 
 function catchPokemon(pokemon, pokedexInfo, cb)
 {
-    Pokeio.EncounterPokemon(pokemon, function(suc, dat) {
-        console.log('Encountering pokemon ' + pokedexInfo.name + '...');
-        Pokeio.CatchPokemon(pokemon, 1, 1.950, 1, 1, function(xsuc, xdat) {
-            cb(xsuc, xdat);
+    var myEncounterId = pokemon.pokemonId + "" + pokemon.SpawnPointId;
+    if(inProgressEncounters.indexOf(myEncounterId) < 0)
+    {   
+        var ind = inProgressEncounters.push(myEncounterId) - 1;
+        Pokeio.EncounterPokemon(pokemon, function(suc, dat) {
+            //console.log(pokemon);
+            console.log('Encountering pokemon ' + pokedexInfo.name + '...');
+            Pokeio.CatchPokemon(pokemon, 1, 1.950, 1, 1, function(xsuc, xdat) {
+                // Encounter finished
+                inProgressEncounters.splice(ind, 1); // remove
+                console.log(xdat);
+                cb(xsuc, xdat);
+            });
         });
-    });
+    }
 }
 
 
@@ -286,9 +296,7 @@ io.on('connection', function (socket) {
                         async.each(hb.cells[i].Fort, function(fort, asCb){
 
                             
-                            console.log('[+] There is a Fort, ID: ' + fort.FortId + ' near!! I can try to farm it!');
-
-                            //socket.emit("wildpokemonfound", pokemon);
+                            //console.log('[+] There is a Fort, ID: ' + fort.FortId + ' near!! I can try to farm it!');
                             
                             if(fort.FortType == 1 && fort.Enabled)
                             {   // 1 = PokeStop; 0 = GYM
@@ -296,7 +304,8 @@ io.on('connection', function (socket) {
                                     if(fortresponse.result == 1)
                                     {
                                         console.log(fort.FortId + " farmed!!");
-                                        console.log(fortresponse);
+                                        //console.log(fortresponse);
+                                        socket.emit("pokestopfarmed", fort);
                                     }
                                 });
                             }

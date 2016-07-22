@@ -33,6 +33,12 @@ function init()
 		
 		$("#log").append("<br><img src='"+ pokemon.img +"' style='width: 45px;'> Wild " + pokemon.name + " catch result: " + pokemon.result);
 	});
+
+	socket.on('pokestopfarmed', function (fort) {
+		console.log("pokestop farmed: ", fort);
+		
+		$("#log").append("<br> PokeStop " + fort.FortId + " farmed! ");
+	});
 }
 
 function initMap() {
