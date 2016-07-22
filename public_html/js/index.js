@@ -2,7 +2,16 @@
 
 var MAP  = null;
 var directionsService = null;
+var socket = null;
 
+function init()
+{
+	socket = io('http://localhost:3000');
+	socket.on('walkdone', function (data) {
+		console.log(data);
+		alert("Wlak finished!!");
+	});
+}
 
 function initMap() {
 	/*
@@ -159,8 +168,11 @@ function getNearbyPokemons()
 
 function walkTo(points)
 {
-	$.post("/api/walk", function(res){
-	});
+	//$.post("/api/walk", function(res){});
+	socket.emit("walk", points);
 }
 
+
+
+init();
 

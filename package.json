@@ -14,7 +14,8 @@
     "async": "*",
     "express": "*",
     "pokemon-go-node-api": "^1.2.8",
-    "request": "*"
+    "request": "*",
+    "socket.io": "^1.4.8"
   },
   "devDependencies": {},
   "optionalDependencies": {},

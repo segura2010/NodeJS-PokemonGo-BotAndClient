@@ -11,6 +11,8 @@ var PROVIDER = process.env.PROVIDER || "google";
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
+// SocketIO
+var io = require('socket.io')(http);
 
 // Requests
 var request = require('request');
@@ -22,6 +24,7 @@ app.use(express.static('public_html'));
 
 
 // Pokemon Go Lib
+//var Pokeio = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
 var Pokeio = require('pokemon-go-node-api')
 
 // Listen on port
@@ -30,7 +33,16 @@ http.listen(PORT, function(){
 });
 
 
-
+function catchPokemon(pokemon, pokedexInfo)
+{
+    Pokeio.EncounterPokemon(pokemon, function(suc, dat) {
+        console.log('Encountering pokemon ' + pokedexInfo.name + '...');
+        Pokeio.CatchPokemon(pokemon, 1, 1.950, 1, 1, function(xsuc, xdat) {
+            var status = ['Unexpected error', 'Successful catch', 'Catch Escape', 'Catch Flee', 'Missed Catch'];
+            console.log(status[xdat.Status]);
+        });
+    });
+}
 
 
 // Initialize PokemonGo
@@ -166,6 +178,7 @@ app.post('/api/walk', (req, res) => {
                 var nearbyPokemons = [];
                 for (var i = hb.cells.length - 1; i >= 0; i--)
                 {
+                    // Show nearby pokemons
                     for (var j = hb.cells[i].NearbyPokemon.length - 1; j >= 0; j--)
                     {
                         //console.log(Pokeio.pokemonlist[0])
@@ -175,6 +188,16 @@ app.post('/api/walk', (req, res) => {
                         hb.cells[i].NearbyPokemon[j].pokedexinfo = pokemon;
                         hb.cells[i].NearbyPokemon[j].location = hb.cells[i].DecimatedSpawnPoint[0];
                         nearbyPokemons.push(hb.cells[i].NearbyPokemon[j]);
+                    }
+
+                    // Show WildPokemons (catchable)
+                    for (var j = hb.cells[i].WildPokemon.length - 1; j >= 0; j--)
+                    {
+                        //console.log(Pokeio.pokemonlist[0])
+                        var currentPokemon = hb.cells[i].WildPokemon[j];
+                        var pokemon = Pokeio.pokemonlist[parseInt(currentPokemon.PokedexNumber)-1]
+                        console.log('[+] There is a ' + pokemon.name + ' at ' + currentPokemon.DistanceMeters.toString() + ' meters');
+                        catchPokemon( currentPokemon, pokemon );
                     }
                 }
 
@@ -189,4 +212,75 @@ app.post('/api/walk', (req, res) => {
     });
 
 });
+
+
+// SocketIO Events
+io.on('connection', function (socket) {
+    console.log("New connection!");
+
+    socket.on('walk', function (data) {
+        // test
+        var points = data;
+
+        async.eachSeries(points, (p, cb)=>{
+            console.log("Going to ", p);
+
+            var location = {
+                type: 'coords',
+                coords:
+                {
+                    latitude: parseFloat(p.lat),
+                    longitude: parseFloat(p.lng)
+                }
+            };
+
+            Pokeio.SetLocation(location, (err) => {
+                if (err) throw err;
+
+                Pokeio.Heartbeat(function(err,hb) {
+                    if(err)
+                    {
+                        console.log(err);
+                    }
+
+                    var nearbyPokemons = [];
+                    for (var i = hb.cells.length - 1; i >= 0; i--)
+                    {
+                        // Show nearby pokemons
+                        for (var j = hb.cells[i].NearbyPokemon.length - 1; j >= 0; j--)
+                        {
+                            var currentPokemon = hb.cells[i].NearbyPokemon[j];
+                            //console.log(Pokeio.pokemonlist[0])
+                            var pokemon = Pokeio.pokemonlist[parseInt(currentPokemon.PokedexNumber)-1]
+                            console.log('[+] There is a ' + pokemon.name + ' at ' + currentPokemon.DistanceMeters.toString() + ' meters');
+                            // Set pokedex info
+                            hb.cells[i].NearbyPokemon[j].pokedexinfo = pokemon;
+                            hb.cells[i].NearbyPokemon[j].location = hb.cells[i].DecimatedSpawnPoint[0];
+                            nearbyPokemons.push(hb.cells[i].NearbyPokemon[j]);
+                        }
+
+                        // Show WildPokemons (catchable)
+                        for (var j = hb.cells[i].WildPokemon.length - 1; j >= 0; j--)
+                        {
+                            //console.log(Pokeio.pokemonlist[0])
+                            var currentPokemon = hb.cells[i].WildPokemon[j];
+                            var pokemon = Pokeio.pokemonlist[parseInt(currentPokemon.pokemon.PokemonId)-1]
+                            console.log('[+] There is a ' + pokemon.name + ' near!! I can try to catch it!');
+                            catchPokemon( currentPokemon, pokemon );
+                        }
+                    }
+
+                    cb();
+
+                });
+            });
+
+        }, ()=>{
+            console.log("OK!");
+            socket.emit('walkdone');
+        });
+    });
+});
+
+
 
