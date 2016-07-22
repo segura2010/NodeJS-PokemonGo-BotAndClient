@@ -1,6 +1,7 @@
 
 
 var MAP  = null;
+var userMarker = null;
 var directionsService = null;
 var socket = null;
 
@@ -10,6 +11,27 @@ function init()
 	socket.on('walkdone', function (data) {
 		console.log(data);
 		alert("Wlak finished!!");
+	});
+	socket.on('locationchanged', function (data) {
+		console.log("Location changed!", data);
+		var latlng = new google.maps.LatLng(data.lat, data.lng);
+    	userMarker.setPosition(latlng);
+
+    	// save new location
+    	localStorage.setItem("lng", data.lng);
+		localStorage.setItem("lat", data.lat);
+	});
+
+	socket.on('wildpokemonfound', function (pokemon) {
+		console.log("wild pokemon found!", pokemon);
+		
+		$("#log").append("<br><img src='"+ pokemon.img +"' style='width: 45px;'> Wild " + pokemon.name + " found! Trying to catch!");
+	});
+
+	socket.on('pokemoncatchresult', function (pokemon) {
+		console.log("pokemon catch result: ", pokemon);
+		
+		$("#log").append("<br><img src='"+ pokemon.img +"' style='width: 45px;'> Wild " + pokemon.name + " catch result: " + pokemon.result);
 	});
 }
 
@@ -79,7 +101,7 @@ function showMap(lat, lng)
 			});
 		}
 	});
-	var marker = new google.maps.Marker({
+	userMarker = new google.maps.Marker({
 		position: {lat: lat, lng: lng},
 		label: "",
 		map: MAP
@@ -153,14 +175,44 @@ function getNearbyPokemons()
 	var lng = localStorage.getItem("lng");
 	var lat = localStorage.getItem("lat");
 
-	updateLocation();
-
 	$.get("/api/nearbypokemons/"+lng+"/"+lat, function(pokemons){
 		console.log(pokemons);
 
 		for(var p in pokemons)
 		{
 			addPokemonToMap(pokemons[p].pokedexinfo.img, pokemons[p].pokedexinfo.name, pokemons[p].location.Longitude, pokemons[p].location.Latitude);
+		}
+	});
+}
+
+function getNearObjects()
+{
+	var lng = localStorage.getItem("lng");
+	var lat = localStorage.getItem("lat");
+
+	$.get("/api/nearobjects/"+lng+"/"+lat, function(objects){
+		console.log(objects);
+	});
+}
+
+function getNearPokeStops()
+{
+	var lng = localStorage.getItem("lng");
+	var lat = localStorage.getItem("lat");
+
+	$.get("/api/nearpokestops/"+lng+"/"+lat, function(objects){
+		console.log(objects);
+
+		for(var i in objects)
+		{
+			var fort = objects[i];
+			var mapMarker = new google.maps.Marker({
+				position: {lat: fort.Latitude, lng: fort.Longitude},
+				label: "PokeStop",
+				title: "PokeStop",
+				icon: "https://cdn1.iconfinder.com/data/icons/map-objects/154/map-object-info-point-place-help-64.png",
+				map: MAP
+			});
 		}
 	});
 }

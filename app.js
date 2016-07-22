@@ -24,8 +24,8 @@ app.use(express.static('public_html'));
 
 
 // Pokemon Go Lib
-//var Pokeio = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
-var Pokeio = require('pokemon-go-node-api')
+var Pokeio = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
+//var Pokeio = require('pokemon-go-node-api')
 
 // Listen on port
 http.listen(PORT, function(){
@@ -33,13 +33,12 @@ http.listen(PORT, function(){
 });
 
 
-function catchPokemon(pokemon, pokedexInfo)
+function catchPokemon(pokemon, pokedexInfo, cb)
 {
     Pokeio.EncounterPokemon(pokemon, function(suc, dat) {
         console.log('Encountering pokemon ' + pokedexInfo.name + '...');
         Pokeio.CatchPokemon(pokemon, 1, 1.950, 1, 1, function(xsuc, xdat) {
-            var status = ['Unexpected error', 'Successful catch', 'Catch Escape', 'Catch Flee', 'Missed Catch'];
-            console.log(status[xdat.Status]);
+            cb(xsuc, xdat);
         });
     });
 }
@@ -147,68 +146,69 @@ app.get('/api/nearbypokemons/:lng/:lat', (req, res) => {
 
 });
 
+app.get('/api/nearobjects/:lng/:lat', (req, res) => {
 
-app.post('/api/walk', (req, res) => {
+    var location = {
+        type: 'coords',
+        coords:
+        {
+            latitude: parseFloat(req.params.lat),
+            longitude: parseFloat(req.params.lng)
+        }
+    };
 
-    console.log("GO")
-    // test
-    var points = [{lng: -2.7708700000000004, lat: 37.49239}, {lng: -2.7707300000000004, lat: 37.49215}, {lng: -2.7705100000000003, lat: 37.492200000000004}, {lng: -2.7701000000000002, lat: 37.49224}, {lng: -2.7699900000000004, lat: 37.492250000000006}, {lng: -2.7699300000000004, lat: 37.492250000000006}, {lng: -2.7699200000000004, lat: 37.492340000000006}, {lng: -2.7699100000000003, lat: 37.49255}, {lng: -2.7698600000000004, lat: 37.49255}];
+    Pokeio.SetLocation(location, (err) => {
+        if (err) throw err;
 
-    async.eachSeries(points, (p, cb)=>{
-        console.log("Going to ", p);
-
-        var location = {
-            type: 'coords',
-            coords:
+        Pokeio.Heartbeat(function(err,hb) {
+            if(err)
             {
-                latitude: parseFloat(p.lat),
-                longitude: parseFloat(p.lng)
+                console.log(err);
             }
-        };
 
-        Pokeio.SetLocation(location, (err) => {
-            if (err) throw err;
+            res.json(hb);
 
-            Pokeio.Heartbeat(function(err,hb) {
-                if(err)
-                {
-                    console.log(err);
-                }
-
-                var nearbyPokemons = [];
-                for (var i = hb.cells.length - 1; i >= 0; i--)
-                {
-                    // Show nearby pokemons
-                    for (var j = hb.cells[i].NearbyPokemon.length - 1; j >= 0; j--)
-                    {
-                        //console.log(Pokeio.pokemonlist[0])
-                        var pokemon = Pokeio.pokemonlist[parseInt(hb.cells[i].NearbyPokemon[j].PokedexNumber)-1]
-                        console.log('[+] There is a ' + pokemon.name + ' at ' + hb.cells[i].NearbyPokemon[j].DistanceMeters.toString() + ' meters')
-                        // Set pokedex info
-                        hb.cells[i].NearbyPokemon[j].pokedexinfo = pokemon;
-                        hb.cells[i].NearbyPokemon[j].location = hb.cells[i].DecimatedSpawnPoint[0];
-                        nearbyPokemons.push(hb.cells[i].NearbyPokemon[j]);
-                    }
-
-                    // Show WildPokemons (catchable)
-                    for (var j = hb.cells[i].WildPokemon.length - 1; j >= 0; j--)
-                    {
-                        //console.log(Pokeio.pokemonlist[0])
-                        var currentPokemon = hb.cells[i].WildPokemon[j];
-                        var pokemon = Pokeio.pokemonlist[parseInt(currentPokemon.PokedexNumber)-1]
-                        console.log('[+] There is a ' + pokemon.name + ' at ' + currentPokemon.DistanceMeters.toString() + ' meters');
-                        catchPokemon( currentPokemon, pokemon );
-                    }
-                }
-
-                cb();
-
-            });
         });
+    });
 
-    }, ()=>{
-        console.log("OK!");
-        res.send("OK");
+});
+
+app.get('/api/nearpokestops/:lng/:lat', (req, res) => {
+
+    var location = {
+        type: 'coords',
+        coords:
+        {
+            latitude: parseFloat(req.params.lat),
+            longitude: parseFloat(req.params.lng)
+        }
+    };
+
+    Pokeio.SetLocation(location, (err) => {
+        if (err) throw err;
+
+        Pokeio.Heartbeat(function(err,hb) {
+            if(err)
+            {
+                console.log(err);
+            }
+
+            var forts = [];
+
+            for (var i = hb.cells.length - 1; i >= 0; i--)
+            {
+                // Show nearby pokemons
+                for (var j = hb.cells[i].Fort.length - 1; j >= 0; j--)
+                {
+                    var fort = hb.cells[i].Fort[j];
+                    if(fort.FortType == 1)
+                        forts.push( fort );
+                }
+            }
+
+            res.json(forts);
+
+        });
     });
 
 });
@@ -224,6 +224,7 @@ io.on('connection', function (socket) {
 
         async.eachSeries(points, (p, cb)=>{
             console.log("Going to ", p);
+            socket.emit("locationchanged", p); // send new location
 
             var location = {
                 type: 'coords',
@@ -260,14 +261,50 @@ io.on('connection', function (socket) {
                         }
 
                         // Show WildPokemons (catchable)
-                        for (var j = hb.cells[i].WildPokemon.length - 1; j >= 0; j--)
-                        {
-                            //console.log(Pokeio.pokemonlist[0])
-                            var currentPokemon = hb.cells[i].WildPokemon[j];
+                        async.each(hb.cells[i].WildPokemon, function(currentPokemon, asCb){
+
                             var pokemon = Pokeio.pokemonlist[parseInt(currentPokemon.pokemon.PokemonId)-1]
                             console.log('[+] There is a ' + pokemon.name + ' near!! I can try to catch it!');
-                            catchPokemon( currentPokemon, pokemon );
-                        }
+                            //console.log(currentPokemon);
+
+                            socket.emit("wildpokemonfound", pokemon);
+                            
+                            catchPokemon( currentPokemon, pokemon, function(err, catchresult){
+                                var status = ['Unexpected error', 'Successful catch', 'Catch Escape', 'Catch Flee', 'Missed Catch'];
+                                console.log(status[catchresult.Status]);
+
+                                pokemon.result = status[catchresult.Status];
+                                socket.emit("pokemoncatchresult", pokemon);
+                            });
+
+                        }, function(err){
+                            if(err)
+                                console.log("Errors: ", err);
+                        });
+
+                        // Show Forts and Farm pokestops (check points)
+                        async.each(hb.cells[i].Fort, function(fort, asCb){
+
+                            
+                            console.log('[+] There is a Fort, ID: ' + fort.FortId + ' near!! I can try to farm it!');
+
+                            //socket.emit("wildpokemonfound", pokemon);
+                            
+                            if(fort.FortType == 1 && fort.Enabled)
+                            {   // 1 = PokeStop; 0 = GYM
+                                Pokeio.GetFort(fort.FortId, fort.Latitude, fort.Longitude, function(err, fortresponse){
+                                    if(fortresponse.result == 1)
+                                    {
+                                        console.log(fort.FortId + " farmed!!");
+                                        console.log(fortresponse);
+                                    }
+                                });
+                            }
+
+                        }, function(err){
+                            if(err)
+                                console.log("Errors: ", err);
+                        });
                     }
 
                     cb();
