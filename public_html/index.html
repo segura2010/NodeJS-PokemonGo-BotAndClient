@@ -4,38 +4,56 @@
 	<head>
 		<title>PokemonGo Bot</title>
 
+		<!-- Compiled and minified CSS -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+
 		<style>
 			html, body { height: 100%; margin: 0; padding: 0; }
 			#map {
-			  height: 70%;
-			  width: 70%;
+			  height: 450px;
+			  width: 100%;
+			}
+
+			.rightpanel{
+				height: 450px;
+				overflow-y: auto;
 			}
 		</style>
 
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+
+		<!-- Compiled and minified JavaScript -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+
 		<script src="/js/index.js"></script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcpD9RZNVJJfxf3rwqrETr4ochoHMApGc&callback=initMap"></script>
 
 	</head>
 
 	<body>
-		;)
+		
+		<div class="row">
+			<br><br>
 
-		<br><br>
+			<div class="col s8">
+				<div id="map"></div>
 
-		<div id="map"></div>
+				<button class="button" onclick="startBot()">Start</button>
+				<br>
+				<button onclick="getNearbyPokemons()">Get Nearby Pokemons</button>
+				<br>
+				<button onclick="getNearPokeStops()">Get Near PokeStops</button>
+				<br>
+				<button onclick="getNearObjects()">Get Near Objects</button>
+			</div>
 
-		<button onclick="startBot()">Start</button>
-		<br>
-		<button onclick="getNearbyPokemons()">Get Nearby Pokemons</button>
-		<br>
-		<button onclick="getNearPokeStops()">Get Near PokeStops</button>
-		<br>
-		<button onclick="getNearObjects()">Get Near Objects</button>
-
-		<br><br><br>
-		<div id="log">
+			<div class="col s4 rightpanel">
+				<div id="log">
+					<b>Log</b>
+					<br>
+				</div>
+			</div>
 		</div>
 
 	</body>

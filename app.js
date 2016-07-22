@@ -37,20 +37,20 @@ var inProgressEncounters = []; // to save encounters
 function catchPokemon(pokemon, pokedexInfo, cb)
 {
     var myEncounterId = pokemon.pokemonId + "" + pokemon.SpawnPointId;
-    if(inProgressEncounters.indexOf(myEncounterId) < 0)
-    {   
-        var ind = inProgressEncounters.push(myEncounterId) - 1;
+    //if(inProgressEncounters.indexOf(myEncounterId) < 0)
+    //{   
+        //var ind = inProgressEncounters.push(myEncounterId) - 1;
         Pokeio.EncounterPokemon(pokemon, function(suc, dat) {
             //console.log(pokemon);
             console.log('Encountering pokemon ' + pokedexInfo.name + '...');
             Pokeio.CatchPokemon(pokemon, 1, 1.950, 1, 1, function(xsuc, xdat) {
                 // Encounter finished
-                inProgressEncounters.splice(ind, 1); // remove
+                //inProgressEncounters.splice(ind, 1); // remove
                 console.log(xdat);
                 cb(xsuc, xdat);
             });
         });
-    }
+    //}
 }
 
 

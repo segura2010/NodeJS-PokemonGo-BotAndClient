@@ -37,7 +37,7 @@ function init()
 	socket.on('pokestopfarmed', function (fort) {
 		console.log("pokestop farmed: ", fort);
 		
-		$("#log").append("<br> PokeStop " + fort.FortId + " farmed! ");
+		$("#log").append("<br> <img src='/img/pokestop.png' style='width: 45px;'> PokeStop " + fort.FortId + " farmed! ");
 	});
 }
 
@@ -216,7 +216,7 @@ function getNearPokeStops()
 				position: {lat: fort.Latitude, lng: fort.Longitude},
 				label: "PokeStop",
 				title: "PokeStop",
-				icon: "https://cdn1.iconfinder.com/data/icons/map-objects/154/map-object-info-point-place-help-64.png",
+				icon: "/img/pokestop.png",
 				map: MAP
 			});
 		}
