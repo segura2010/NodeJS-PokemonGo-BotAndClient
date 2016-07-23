@@ -4,10 +4,11 @@ var MAP  = null;
 var userMarker = null;
 var directionsService = null;
 var socket = null;
+var SOCKETIO_URL = location.protocol + "//" + location.host;
 
 function init()
 {
-	socket = io('http://localhost:3000');
+	socket = io(SOCKETIO_URL);
 	socket.on('walkdone', function (data) {
 		console.log(data);
 		alert("Wlak finished!!");
