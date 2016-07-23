@@ -34,6 +34,8 @@ http.listen(PORT, function(){
 
 var inProgressEncounters = []; // to save encounters
 
+var catchWildPokemons = true; // tell the bot if he must catch or not pokemons
+
 function catchPokemon(pokemon, pokedexInfo, cb)
 {
     var myEncounterId = pokemon.pokemonId + "" + pokemon.SpawnPointId;
@@ -228,6 +230,11 @@ app.get('/api/nearpokestops/:lng/:lat', (req, res) => {
 io.on('connection', function (socket) {
     console.log("New connection!");
 
+    socket.on('togglecatchpokemons', function (data) {
+        catchWildPokemons = !catchWildPokemons;
+        io.emit('togglecatchpokemons', catchWildPokemons);
+    });
+
     socket.on('walk', function (data) {
         // test
         var points = data;
@@ -296,13 +303,22 @@ function HeartbeatBotLogic(err, hb, cb) {
 
             io.emit("wildpokemonfound", pokemon);
             
-            catchPokemon( currentPokemon, pokemon, function(err, catchresult){
-                var status = ['Unexpected error', 'Successful catch', 'Catch Escape', 'Catch Flee', 'Missed Catch'];
-                console.log(status[catchresult.Status]);
+            if(catchWildPokemons)
+            {
+                catchPokemon( currentPokemon, pokemon, function(err, catchresult){
+                    var status = ['Unexpected error', 'Successful catch', 'Catch Escape', 'Catch Flee', 'Missed Catch'];
+                    console.log(status[catchresult.Status]);
 
-                pokemon.result = status[catchresult.Status];
-                io.emit("pokemoncatchresult", pokemon);
-            });
+                    pokemon.result = status[catchresult.Status];
+                    io.emit("pokemoncatchresult", pokemon);
+
+                    asCb();
+                });
+            }
+            else
+            {
+                asCb();
+            }
 
         }, function(err){
             if(err)
@@ -318,13 +334,24 @@ function HeartbeatBotLogic(err, hb, cb) {
             if(fort.FortType == 1 && fort.Enabled)
             {   // 1 = PokeStop; 0 = GYM
                 Pokeio.GetFort(fort.FortId, fort.Latitude, fort.Longitude, function(err, fortresponse){
+                    //console.log("FORT result:");
+                    //console.log(fortresponse);
                     if(fortresponse.result == 1)
                     {
                         console.log(fort.FortId + " farmed!!");
                         //console.log(fortresponse);
                         io.emit("pokestopfarmed", fort);
+                        asCb();
+                    }
+                    else
+                    {
+                        asCb();
                     }
                 });
+            }
+            else
+            {
+                asCb();
             }
 
         }, function(err){

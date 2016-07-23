@@ -41,6 +41,8 @@ function init()
 		
 		$("#log").append("<br> <img src='/img/pokestop.png' style='width: 45px;'> PokeStop " + fort.FortId + " farmed! ");
 	});
+
+	socket.on('togglecatchpokemons', onToggleCatchPokemons);
 }
 
 function initMap() {
@@ -246,6 +248,17 @@ function walkTo(points)
 {
 	//$.post("/api/walk", function(res){});
 	socket.emit("walk", points);
+}
+
+function toggleCatchPokemons()
+{
+	var toggle = $("#toggleCatchPokemonsCheckbox").is(":checked");
+	socket.emit('togglecatchpokemons', toggle);
+}
+
+function onToggleCatchPokemons(toggle)
+{
+	$("#toggleCatchPokemonsCheckbox").prop('checked', toggle);
 }
 
 
