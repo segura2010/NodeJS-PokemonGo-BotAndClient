@@ -2,6 +2,7 @@
 
 var MAP  = null;
 var userMarker = null;
+var pokemonMarker = null;
 var directionsService = null;
 var socket = null;
 var SOCKETIO_URL = location.protocol + "//" + location.host;
@@ -26,7 +27,7 @@ function init()
 	socket.on('wildpokemonfound', function (pokemon) {
 		console.log("wild pokemon found!", pokemon);
 		
-		$("#log").append("<br><img src='"+ pokemon.img +"' style='width: 45px;'> Wild " + pokemon.name + " found! Trying to catch!");
+		$("#log").append("<br><img src='"+ pokemon.img +"' style='width: 45px;' onclick='showHidePokemonOnMap("+ pokemon.Latitude +","+ pokemon.Longitude +",\""+ pokemon.name +"\",\""+ pokemon.img +"\")'> Wild " + pokemon.name + " found! Trying to catch!");
 	});
 
 	socket.on('pokemoncatchresult', function (pokemon) {
@@ -221,6 +222,22 @@ function getNearPokeStops()
 				map: MAP
 			});
 		}
+	});
+}
+
+
+function showHidePokemonOnMap(lat, lng, name, img)
+{
+	if(pokemonMarker != null)
+	{	// remove marker
+		pokemonMarker.setMap(null);
+	}
+	pokemonMarker = new google.maps.Marker({
+		position: {lat: lat, lng: lng},
+		label: name,
+		title: name,
+		icon: img,
+		map: MAP
 	});
 }
 

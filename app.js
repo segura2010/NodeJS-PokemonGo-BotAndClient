@@ -291,6 +291,8 @@ function HeartbeatBotLogic(err, hb, cb) {
             var pokemon = Pokeio.pokemonlist[parseInt(currentPokemon.pokemon.PokemonId)-1]
             console.log('[+] There is a ' + pokemon.name + ' near!! I can try to catch it!');
             //console.log(currentPokemon);
+            pokemon.Latitude = currentPokemon.Latitude;
+            pokemon.Longitude = currentPokemon.Longitude;
 
             io.emit("wildpokemonfound", pokemon);
             
