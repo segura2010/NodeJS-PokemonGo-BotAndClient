@@ -51,6 +51,8 @@ function init()
 	socket.on('catchonlychanged', onCatchOnlyChanged);
 
 	socket.on('togglecatchpokemons', onToggleCatchPokemons);
+
+	socket.on('farmingchanged', onFarmingChanged);
 }
 
 function initMap() {
@@ -279,6 +281,18 @@ function catchOnlyChange()
 function onCatchOnlyChanged(pokemons)
 {
 	$("#catchOnlyTxt").val(pokemons);
+}
+
+
+function farmingChange()
+{
+	var toggle = $("#farmingChangeCheckbox").is(":checked");
+	socket.emit('farmingchange', toggle);
+}
+
+function onFarmingChanged(toggle)
+{
+	$("#farmingChangeCheckbox").prop('checked', toggle);
 }
 
 

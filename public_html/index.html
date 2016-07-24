@@ -42,18 +42,23 @@
 
 				<button class="button" onclick="startBot()">Start</button>
 				<br>
-				<button onclick="getNearbyPokemons()">Get Nearby Pokemons</button>
+				<!-- <button onclick="getNearbyPokemons()">Get Nearby Pokemons</button> -->
 				<br>
 				<button onclick="getNearPokeStops()">Get Near PokeStops</button>
 				<br>
 				<button onclick="getNearObjects()">Get Near Objects</button>
 				<br><br>
 				
-				<input id="toggleCatchPokemonsCheckbox" name="toggleCatchPokemonsCheckbox" type="checkbox" value="catchpokemons" onchange="toggleCatchPokemons()" checked/>
+				<input id="toggleCatchPokemonsCheckbox" name="toggleCatchPokemonsCheckbox" type="checkbox" value="catchpokemons" onchange="toggleCatchPokemons()" />
       			<label for="toggleCatchPokemonsCheckbox">Catch Pokemons?</label>
 				
       			<br><br>
       			
+      			<input id="farmingChangeCheckbox" name="farmingChangeCheckbox" type="checkbox" value="farming" onchange="farmingChange()" />
+      			<label for="farmingChangeCheckbox">Farming?</label>
+
+      			<br><br>
+
 				<input id="catchOnlyTxt" name="catchOnlyTxt" type="text" value=""/>
       			<label for="catchOnlyTxt">Allowed Pokemons to catch when catch pokemons disabled</label>
       			<button onclick="catchOnlyChange()">Change allowed pokemons to catch</button>

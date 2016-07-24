@@ -27,6 +27,12 @@ app.use(express.static('public_html'));
 var Pokeio = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
 //var Pokeio = require('pokemon-go-node-api')
 
+// Geolocation libs 
+var geolib = require('geolib');
+var googlemaps = require('googlemaps');
+var GMAPS_API_KEY = "AIzaSyDcpD9RZNVJJfxf3rwqrETr4ochoHMApGc";
+var gm = new googlemaps({key:GMAPS_API_KEY});
+
 // Listen on port
 http.listen(PORT, function(){
 	console.log('listening on *:'+ PORT);
@@ -34,8 +40,10 @@ http.listen(PORT, function(){
 
 var inProgressEncounters = []; // to save encounters
 
-var catchWildPokemons = true; // tell the bot if he must catch or not pokemons
+var catchWildPokemons = false; // tell the bot if he must catch or not pokemons
 var catchOnly = []; // if catchWildPokemons = false, we will catch only pokemons on catchOnly array
+var pokestops = []; // save near pokestops
+var farmingActivated = false;
 
 function catchPokemon(pokemon, pokedexInfo, cb)
 {
@@ -226,6 +234,19 @@ app.get('/api/nearpokestops/:lng/:lat', (req, res) => {
 
 });
 
+app.get('/api/testdistance', (req, res) => {
+    var distance = geolib.getDistance(
+        {latitude: 51.5103, longitude: 7.49347},
+        {latitude: "51° 31' N", longitude: "7° 28' E"}
+    );
+
+    console.log(distance);
+
+
+    res.send("DIST: " + distance);
+});
+
+
 
 // SocketIO Events
 io.on('connection', function (socket) {
@@ -242,6 +263,13 @@ io.on('connection', function (socket) {
         // example: bulbasur,charmander,pikachu
         catchOnly = data.toLowerCase().split(",");
         io.emit('catchonlychanged', data);
+    });
+
+    socket.on('farmingchange', function (data) {
+        farmingActivated = !farmingActivated;
+        console.log("Farming set to: ", farmingActivated);
+        io.emit('farmingchanged', farmingActivated);
+        farmPokestops();
     });
 
     socket.on('walk', function (data) {
@@ -277,6 +305,128 @@ io.on('connection', function (socket) {
 });
 
 
+function getRoute(olat, olng, dlat, dlng, cb)
+{
+    var params = {
+        origin: olat + "," + olng,
+        destination: dlat + "," + dlng,
+        mode: 'walking'
+    };
+
+    gm.directions(params, (err, data)=>{
+        //console.log(JSON.stringify(data));
+        var steps = data.routes[0].legs[0].steps;
+        var points = [];
+        for(var i in steps)
+        {
+            var p = {
+                lat: steps[i].end_location.lat,
+                lng: steps[i].end_location.lng
+            };
+            points.push(p);
+        }
+        //console.log(points);
+        cb(points);
+    });
+}
+
+function getNearestPokestop()
+{
+    var distance = geolib.getDistance(
+        {latitude: 51.5103, longitude: 7.49347},
+        {latitude: "51° 31' N", longitude: "7° 28' E"}
+    );
+
+    var min_dist = 9999999, min_p = 0;
+
+    for(var p in pokestops)
+    {
+        var ps = pokestops[p];
+        var playerLocation = Pokeio.GetLocationCoords();
+        var distance = geolib.getDistance(
+            {latitude: ps.Latitude, longitude: ps.Longitude},
+            {latitude: playerLocation.latitude, longitude: playerLocation.longitude}
+        );
+        if(distance < min_dist)
+        {
+            min_p = p;
+            min_dist = distance;
+        }
+    }
+
+    return p;
+}
+
+function updatePokestops(cb)
+{
+    Pokeio.Heartbeat(function(err,hb) {
+        if(err)
+        {
+            console.log(err);
+        }
+
+        var forts = [];
+
+        for (var i = hb.cells.length - 1; i >= 0; i--)
+        {
+            for (var j = hb.cells[i].Fort.length - 1; j >= 0; j--)
+            {
+                var fort = hb.cells[i].Fort[j];
+                if(fort.FortType == 1)
+                    forts.push( fort );
+            }
+        }
+
+        pokestops = forts;
+        cb();
+
+    });
+}
+
+function farmPokestops()
+{
+    if(!farmingActivated)
+    {
+        return;
+    }
+
+    if(pokestops.length <= 0)
+    {
+        return updatePokestops(farmPokestops);
+    }
+
+    var nearestPokestopIndex = getNearestPokestop();
+    var nearestPokestop = pokestops[nearestPokestopIndex];
+    var playerLocation = Pokeio.GetLocationCoords();
+    getRoute(playerLocation.latitude, playerLocation.longitude, nearestPokestop.Latitude, nearestPokestop.Longitude, (points)=>{
+        async.eachSeries(points, (p, cb)=>{
+            console.log("Going to ", p);
+            io.emit("locationchanged", p); // send new location
+
+            var location = {
+                type: 'coords',
+                coords:
+                {
+                    latitude: parseFloat(p.lat),
+                    longitude: parseFloat(p.lng)
+                }
+            };
+
+            Pokeio.SetLocation(location, (err) => {
+                if (err) throw err;
+
+                Pokeio.Heartbeat(function(err, hb){
+                    HeartbeatBotLogic(err, hb, cb);
+                });
+            });
+
+        }, ()=>{
+            console.log("OK!");
+            pokestops.splice(nearestPokestopIndex, 1); // delete pokestop!
+            farmPokestops();
+        });
+    });
+}
 
 
 function HeartbeatBotLogic(err, hb, cb) {
