@@ -35,6 +35,7 @@ http.listen(PORT, function(){
 var inProgressEncounters = []; // to save encounters
 
 var catchWildPokemons = true; // tell the bot if he must catch or not pokemons
+var catchOnly = []; // if catchWildPokemons = false, we will catch only pokemons on catchOnly array
 
 function catchPokemon(pokemon, pokedexInfo, cb)
 {
@@ -232,7 +233,15 @@ io.on('connection', function (socket) {
 
     socket.on('togglecatchpokemons', function (data) {
         catchWildPokemons = !catchWildPokemons;
+        console.log("Catch pokemons set to: ", catchWildPokemons);
         io.emit('togglecatchpokemons', catchWildPokemons);
+    });
+
+    socket.on('catchonlychange', function (data) {
+        // data must be an string separated with commas
+        // example: bulbasur,charmander,pikachu
+        catchOnly = data.toLowerCase().split(",");
+        io.emit('catchonlychanged', data);
     });
 
     socket.on('walk', function (data) {
@@ -303,7 +312,7 @@ function HeartbeatBotLogic(err, hb, cb) {
 
             io.emit("wildpokemonfound", pokemon);
             
-            if(catchWildPokemons)
+            if(catchWildPokemons || catchOnly.indexOf(pokemon.name.toLowerCase()) >= 0)
             {
                 catchPokemon( currentPokemon, pokemon, function(err, catchresult){
                     var status = ['Unexpected error', 'Successful catch', 'Catch Escape', 'Catch Flee', 'Missed Catch'];
@@ -341,6 +350,13 @@ function HeartbeatBotLogic(err, hb, cb) {
                         console.log(fort.FortId + " farmed!!");
                         //console.log(fortresponse);
                         io.emit("pokestopfarmed", fort);
+                        asCb();
+                    }
+                    else if(fortresponse.result == 4)
+                    {
+                        console.log(fort.FortId + " Inventory Full!!");
+                        //console.log(fortresponse);
+                        io.emit("inventoryfull", fort);
                         asCb();
                     }
                     else

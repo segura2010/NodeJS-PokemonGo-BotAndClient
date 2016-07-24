@@ -6,6 +6,7 @@
 
 		<!-- Compiled and minified CSS -->
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 		<style>
 			html, body { height: 100%; margin: 0; padding: 0; }
@@ -47,8 +48,16 @@
 				<br>
 				<button onclick="getNearObjects()">Get Near Objects</button>
 				<br><br>
+				
 				<input id="toggleCatchPokemonsCheckbox" name="toggleCatchPokemonsCheckbox" type="checkbox" value="catchpokemons" onchange="toggleCatchPokemons()" checked/>
       			<label for="toggleCatchPokemonsCheckbox">Catch Pokemons?</label>
+				
+      			<br><br>
+      			
+				<input id="catchOnlyTxt" name="catchOnlyTxt" type="text" value=""/>
+      			<label for="catchOnlyTxt">Allowed Pokemons to catch when catch pokemons disabled</label>
+      			<button onclick="catchOnlyChange()">Change allowed pokemons to catch</button>
+      			
 			</div>
 
 			<div class="col s4 rightpanel">

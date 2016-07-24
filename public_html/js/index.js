@@ -42,6 +42,14 @@ function init()
 		$("#log").append("<br> <img src='/img/pokestop.png' style='width: 45px;'> PokeStop " + fort.FortId + " farmed! ");
 	});
 
+	socket.on('inventoryfull', function (fort) {
+		console.log("pokestop farm FAIL! Inventory full!: ", fort);
+		
+		$("#log").append("<br> <i class='material-icons' style='color:red;'>mood_bad</i> PokeStop " + fort.FortId + " NOT farmed! Inventory full!");
+	});
+
+	socket.on('catchonlychanged', onCatchOnlyChanged);
+
 	socket.on('togglecatchpokemons', onToggleCatchPokemons);
 }
 
@@ -259,6 +267,18 @@ function toggleCatchPokemons()
 function onToggleCatchPokemons(toggle)
 {
 	$("#toggleCatchPokemonsCheckbox").prop('checked', toggle);
+}
+
+
+function catchOnlyChange()
+{
+	var pokemons = $("#catchOnlyTxt").val();
+	socket.emit('catchonlychange', pokemons);
+}
+
+function onCatchOnlyChanged(pokemons)
+{
+	$("#catchOnlyTxt").val(pokemons);
 }
 
 
