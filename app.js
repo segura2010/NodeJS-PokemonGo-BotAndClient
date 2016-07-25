@@ -44,7 +44,7 @@ var catchWildPokemons = false; // tell the bot if he must catch or not pokemons
 var catchOnly = []; // if catchWildPokemons = false, we will catch only pokemons on catchOnly array
 var pokestops = []; // save near pokestops
 var farmingActivated = false;
-var waitingTime = 1000; // 1 sec of interval to go to the next waypoint in a route
+var waitingTime = 500; // 1 sec of interval to go to the next waypoint in a route
 var minDistanceToFort = 100; // in meters
 
 function catchPokemon(pokemon, pokedexInfo, cb)
