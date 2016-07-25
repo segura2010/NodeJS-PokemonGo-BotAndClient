@@ -44,6 +44,8 @@ var catchWildPokemons = false; // tell the bot if he must catch or not pokemons
 var catchOnly = []; // if catchWildPokemons = false, we will catch only pokemons on catchOnly array
 var pokestops = []; // save near pokestops
 var farmingActivated = false;
+var waitingTime = 1000; // 1 sec of interval to go to the next waypoint in a route
+var minDistanceToFort = 100; // in meters
 
 function catchPokemon(pokemon, pokedexInfo, cb)
 {
@@ -293,7 +295,9 @@ io.on('connection', function (socket) {
                 if (err) throw err;
 
                 Pokeio.Heartbeat(function(err, hb){
-                    HeartbeatBotLogic(err, hb, cb);
+                    HeartbeatBotLogic(err, hb, function(){
+                        setTimeout(cb, waitingTime);
+                    });
                 });
             });
 
@@ -412,7 +416,9 @@ function farmPokestops()
                 if (err) throw err;
 
                 Pokeio.Heartbeat(function(err, hb){
-                    HeartbeatBotLogic(err, hb, cb);
+                    HeartbeatBotLogic(err, hb, function(){
+                        setTimeout(cb, waitingTime);
+                    });
                 });
             });
 
@@ -488,28 +494,41 @@ function HeartbeatBotLogic(err, hb, cb) {
             
             if(fort.FortType == 1 && fort.Enabled)
             {   // 1 = PokeStop; 0 = GYM
-                Pokeio.GetFort(fort.FortId, fort.Latitude, fort.Longitude, function(err, fortresponse){
-                    //console.log("FORT result:");
-                    //console.log(fortresponse);
-                    if(fortresponse.result == 1)
-                    {
-                        console.log(fort.FortId + " farmed!!");
+
+                var playerLocation = Pokeio.GetLocationCoords();
+                var distance = geolib.getDistance(
+                    {latitude: fort.Latitude, longitude: fort.Longitude},
+                    {latitude: playerLocation.latitude, longitude: playerLocation.longitude}
+                );
+                if(distance <= minDistanceToFort)
+                {   // Check distance to fort before use it
+                    Pokeio.GetFort(fort.FortId, fort.Latitude, fort.Longitude, function(err, fortresponse){
+                        //console.log("FORT result:");
                         //console.log(fortresponse);
-                        io.emit("pokestopfarmed", fort);
-                        asCb();
-                    }
-                    else if(fortresponse.result == 4)
-                    {
-                        console.log(fort.FortId + " Inventory Full!!");
-                        //console.log(fortresponse);
-                        io.emit("inventoryfull", fort);
-                        asCb();
-                    }
-                    else
-                    {
-                        asCb();
-                    }
-                });
+                        if(fortresponse.result == 1)
+                        {
+                            console.log(fort.FortId + " farmed!!");
+                            //console.log(fortresponse);
+                            io.emit("pokestopfarmed", fort);
+                            asCb();
+                        }
+                        else if(fortresponse.result == 4)
+                        {
+                            console.log(fort.FortId + " Inventory Full!!");
+                            //console.log(fortresponse);
+                            io.emit("inventoryfull", fort);
+                            asCb();
+                        }
+                        else
+                        {
+                            asCb();
+                        }
+                    });
+                }
+                else
+                {
+                    asCb();
+                }
             }
             else
             {
