@@ -9,6 +9,7 @@ var SOCKETIO_URL = location.protocol + "//" + location.host;
 
 function init()
 {
+	// Setup socketIO
 	socket = io(SOCKETIO_URL);
 	socket.on('walkdone', function (data) {
 		console.log(data);
@@ -53,6 +54,11 @@ function init()
 	socket.on('togglecatchpokemons', onToggleCatchPokemons);
 
 	socket.on('farmingchanged', onFarmingChanged);
+
+	// restore pokemon whitelist from localstorage
+	$( document ).ready(function() {
+	    restorePokemonWhitelist();
+	});
 }
 
 function initMap() {
@@ -275,6 +281,7 @@ function onToggleCatchPokemons(toggle)
 function catchOnlyChange()
 {
 	var pokemons = $("#catchOnlyTxt").val();
+	localStorage.setItem("pokemonwhitelist", pokemons);
 	socket.emit('catchonlychange', pokemons);
 }
 
@@ -295,6 +302,12 @@ function onFarmingChanged(toggle)
 	$("#farmingChangeCheckbox").prop('checked', toggle);
 }
 
+
+function restorePokemonWhitelist()
+{
+	var pokemons = localStorage.getItem("pokemonwhitelist");
+	$("#catchOnlyTxt").val(pokemons);
+}
 
 
 init();
