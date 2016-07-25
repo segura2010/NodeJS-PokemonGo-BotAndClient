@@ -332,10 +332,6 @@ function getRoute(olat, olng, dlat, dlng, cb)
 
 function getNearestPokestop()
 {
-    var distance = geolib.getDistance(
-        {latitude: 51.5103, longitude: 7.49347},
-        {latitude: "51° 31' N", longitude: "7° 28' E"}
-    );
 
     var min_dist = 9999999, min_p = 0;
 
@@ -354,7 +350,7 @@ function getNearestPokestop()
         }
     }
 
-    return p;
+    return min_p;
 }
 
 function updatePokestops(cb)
