@@ -30,6 +30,14 @@ And finally, you can give a list of pokemons (pokemons names separated by commas
 Feel free to modify as you want this bot, open issues if you find some bug or to propose new functionality. I made it on my spare time, so I dont promise you to keep it updated :(
 
 
+### Examples
+
+![](http://i.giphy.com/l46CAn1NRxUILqOFG.gif)
+
+![](http://i.giphy.com/l46Cl3OAOOrZwiVPO.gif)
+
+![](http://i.imgur.com/A1s0D50.png)
+
 
 ### License
 
