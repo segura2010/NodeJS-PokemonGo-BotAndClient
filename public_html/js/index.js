@@ -28,7 +28,7 @@ function init()
 	socket.on('wildpokemonfound', function (pokemon) {
 		console.log("wild pokemon found!", pokemon);
 		
-		$("#log").append("<br><img src='"+ pokemon.img +"' style='width: 45px;' onclick='showHidePokemonOnMap("+ pokemon.Latitude +","+ pokemon.Longitude +",\""+ pokemon.name +"\",\""+ pokemon.img +"\")'> Wild " + pokemon.name + " found! Trying to catch!");
+		$("#log").append("<br><img src='"+ pokemon.img +"' style='width: 45px;' onclick='showHidePokemonOnMap("+ pokemon.Latitude +","+ pokemon.Longitude +",\""+ pokemon.name +"\",\""+ pokemon.img +"\")'> Wild " + pokemon.name + " found!");
 	});
 
 	socket.on('pokemoncatchresult', function (pokemon) {
