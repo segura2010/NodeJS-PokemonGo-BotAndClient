@@ -13,6 +13,8 @@ var app = express();
 var http = require('http').Server(app);
 // SocketIO
 var io = require('socket.io')(http);
+// Post HTTP request body parser
+var bodyParser = require('body-parser');
 
 // Requests
 var request = require('request');
@@ -21,11 +23,17 @@ var async = require('async');
 
 // Initialize HTTP Server
 app.use(express.static('public_html'));
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
+app.use(bodyParser.json());
 
 
 // Pokemon Go Lib
-var Pokeio = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
-//var Pokeio = require('pokemon-go-node-api')
+//var PokemonGO = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
+var PokemonGO = require('pokemon-go-node-api')
+
+var Pokeio = null;
 
 // Geolocation libs 
 var geolib = require('geolib');
@@ -69,7 +77,7 @@ function catchPokemon(pokemon, pokedexInfo, cb)
 
 // Initialize PokemonGo
 
-app.get('/api/start/:lng/:lat', (req, res) => {
+app.post('/api/start/:lng/:lat', (req, res) => {
 
     var location = {
         type: 'coords',
@@ -80,7 +88,12 @@ app.get('/api/start/:lng/:lat', (req, res) => {
         }
     };
 
-    Pokeio.init(USERNAME, PASSWORD, location, PROVIDER, (err) => {
+    Pokeio = new PokemonGO.Pokeio(); // Init
+
+    var actUsername = req.body.username || USERNAME;
+    var actPassword = req.body.password || PASSWORD;
+
+    Pokeio.init(actUsername, actPassword, location, PROVIDER, (err) => {
         if (err) throw err;
 
         console.log('[i] Current location: ' + Pokeio.playerInfo.locationName);

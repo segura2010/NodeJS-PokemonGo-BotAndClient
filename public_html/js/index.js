@@ -13,7 +13,7 @@ function init()
 	socket = io(SOCKETIO_URL);
 	socket.on('walkdone', function (data) {
 		console.log(data);
-		alert("Wlak finished!!");
+		alert("Walk finished!!");
 	});
 	socket.on('locationchanged', function (data) {
 		console.log("Location changed!", data);
@@ -165,13 +165,19 @@ function getRoute(start, end, cb)
 
 
 
-function startBot()
+function login()
 {
 	var lng = localStorage.getItem("lng");
 	var lat = localStorage.getItem("lat");
 
-	$.get("/api/start/"+lng+"/"+lat, function(res){
+	var userInfo = {
+		username: $("#usernameTxt").val(),
+		password: $("#passwordTxt").val()
+	};
+
+	$.post("/api/start/"+lng+"/"+lat, userInfo, function(res){
 		console.log(res);
+		alert("Logged In!");
 	});
 }
 

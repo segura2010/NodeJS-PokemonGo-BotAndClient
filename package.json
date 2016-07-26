@@ -12,10 +12,11 @@
   },
   "dependencies": {
     "async": "*",
+    "body-parser": "^1.15.2",
     "express": "*",
     "geolib": "^2.0.21",
     "googlemaps": "^1.11.1",
-    "pokemon-go-node-api": "^1.2.8",
+    "pokemon-go-node-api": "https://github.com/segura2010/Pokemon-GO-node-api.git",
     "request": "*",
     "socket.io": "^1.4.8"
   },
