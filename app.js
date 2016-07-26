@@ -30,8 +30,8 @@ app.use(bodyParser.json());
 
 
 // Pokemon Go Lib
-//var PokemonGO = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
-var PokemonGO = require('pokemon-go-node-api')
+var PokemonGO = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
+//var PokemonGO = require('pokemon-go-node-api')
 
 var Pokeio = null;
 
@@ -249,16 +249,24 @@ app.get('/api/nearpokestops/:lng/:lat', (req, res) => {
 
 });
 
-app.get('/api/testdistance', (req, res) => {
-    var distance = geolib.getDistance(
-        {latitude: 51.5103, longitude: 7.49347},
-        {latitude: "51° 31' N", longitude: "7° 28' E"}
-    );
+app.get('/api/inventory', (req, res) => {
+    Pokeio.GetInventory((err, inv)=>{
+        if(err)
+            console.log(err);
 
-    console.log(distance);
-
-
-    res.send("DIST: " + distance);
+        var inventory = inv.inventory_delta.inventory_items;
+        var items = [];
+        for(var i in inventory)
+        {
+            var item = inventory[i].inventory_item_data.item;
+            if(item && item.item)
+            {
+                console.log(JSON.stringify(item));
+                items.push(item);
+            }
+        }
+        res.send(items);
+    });
 });
 
 
