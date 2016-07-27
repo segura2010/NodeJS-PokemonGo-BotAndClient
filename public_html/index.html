@@ -60,6 +60,16 @@
       			<label for="farmingChangeCheckbox">Farming?</label>
 
       			<br><br>
+      			
+      			<select class="browser-default" id="pokeballTypeSelector" name="pokeballTypeSelector" onchange="pokeballChange()">
+			      <option value="" disabled selected>Select the Pokeball type that will be used to catch Pokemons</option>
+			      <option value="1">Pokeball</option>
+			      <option value="2">Greatball</option>
+			      <option value="3">Ultraball</option>
+			      <option value="4">Masterball</option>
+			    </select>
+      			
+      			<br><br>
 
 				<input id="catchOnlyTxt" name="catchOnlyTxt" type="text" value=""/>
       			<label for="catchOnlyTxt">Allowed Pokemons to catch when catch pokemons disabled</label>

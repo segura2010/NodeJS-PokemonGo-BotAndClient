@@ -54,6 +54,7 @@ var pokestops = []; // save near pokestops
 var farmingActivated = false;
 var waitingTime = 500; // 1 sec of interval to go to the next waypoint in a route
 var minDistanceToFort = 100; // in meters
+var pokeballType = 1; // pokeball type the bot will use to catch pokemons
 
 // Items info
 var itemsInfo = require('./resources/items.json');
@@ -67,7 +68,7 @@ function catchPokemon(pokemon, pokedexInfo, cb)
         Pokeio.EncounterPokemon(pokemon, function(suc, dat) {
             //console.log(pokemon);
             console.log('Encountering pokemon ' + pokedexInfo.name + '...');
-            Pokeio.CatchPokemon(pokemon, 1, 1.950, 1, 1, function(xsuc, xdat) {
+            Pokeio.CatchPokemon(pokemon, 1, 1.950, 1, pokeballType, function(xsuc, xdat) {
                 // Encounter finished
                 //inProgressEncounters.splice(ind, 1); // remove
                 console.log(xdat);
@@ -331,6 +332,12 @@ io.on('connection', function (socket) {
         console.log("Farming set to: ", farmingActivated);
         io.emit('farmingchanged', farmingActivated);
         farmPokestops();
+    });
+
+    socket.on('pokeballchange', function (type) {
+        pokeballType = parseInt(type);
+        console.log("Pokeball type set to: ", pokeballType);
+        io.emit('pokeballchanged', pokeballType);
     });
 
     socket.on('walk', function (data) {

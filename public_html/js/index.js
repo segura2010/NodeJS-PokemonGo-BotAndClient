@@ -55,12 +55,18 @@ function init()
 	socket.on('togglecatchpokemons', onToggleCatchPokemons);
 
 	socket.on('farmingchanged', onFarmingChanged);
+	
+	socket.on('pokeballchanged', onPokeballChanged);
 
 	// restore pokemon whitelist from localstorage
 	$( document ).ready(function() {
 	    restorePokemonWhitelist();
 	    getUserProfile();
 	    getInventory();
+
+	    $(document).ready(function() {
+			$('select').material_select();
+		});
 	});
 }
 
@@ -379,6 +385,17 @@ function showDeleteItem(name, id)
 {
 	var count = prompt("How many '"+name+"' do you want to drop?", 0);
 	deleteItem(id, count);
+}
+
+function pokeballChange()
+{
+	var type = $("#pokeballTypeSelector").val();
+	socket.emit('pokeballchange', type);
+}
+
+function onPokeballChanged(type)
+{
+	$("#pokeballTypeSelector").val(type);
 }
 
 
