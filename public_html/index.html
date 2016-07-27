@@ -67,10 +67,25 @@
       			
 			</div>
 
-			<div class="col s4 rightpanel">
-				<div id="log">
+			<div class="col s4">
+				<div id="log" class="rightpanel">
 					<b>Log</b>
 					<br>
+				</div>
+
+				<div id="userinfo" class="rightpanel">
+					<b>UserInfo</b>
+					<a class="btn-floating btn-large waves-effect waves-light right"><i class="material-icons" onclick="getAllUserInfo()">autorenew</i></a>
+					<br><br>
+
+					<b id="username"></b>
+					<p>Pokecoin: <span id="pokecoin"></span></p>
+					<p>Stardust: <span id="stardust"></span></p>
+
+					<br>
+					<b>Inventory (<span id="inventoryUsedSpace"></span>)</b>
+					<div id="inventory"></div>
+
 				</div>
 			</div>
 		</div>

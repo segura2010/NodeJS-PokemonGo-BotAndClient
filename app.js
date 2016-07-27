@@ -55,6 +55,9 @@ var farmingActivated = false;
 var waitingTime = 500; // 1 sec of interval to go to the next waypoint in a route
 var minDistanceToFort = 100; // in meters
 
+// Items info
+var itemsInfo = require('./resources/items.json');
+
 function catchPokemon(pokemon, pokedexInfo, cb)
 {
     var myEncounterId = pokemon.pokemonId + "" + pokemon.SpawnPointId;
@@ -250,6 +253,11 @@ app.get('/api/nearpokestops/:lng/:lat', (req, res) => {
 });
 
 app.get('/api/inventory', (req, res) => {
+    if( !Pokeio )
+    {
+        return res.json([]);
+    }
+
     Pokeio.GetInventory((err, inv)=>{
         if(err)
             console.log(err);
@@ -261,7 +269,7 @@ app.get('/api/inventory', (req, res) => {
             var item = inventory[i].inventory_item_data.item;
             if(item && item.item)
             {
-                console.log(JSON.stringify(item));
+                item.name = itemsInfo[item.item];
                 items.push(item);
             }
         }
@@ -269,6 +277,36 @@ app.get('/api/inventory', (req, res) => {
     });
 });
 
+app.get('/api/profile', (req, res) => {
+    if( !Pokeio )
+    {
+        return res.json({});
+    }
+
+    Pokeio.GetProfile((err, prof)=>{
+        if(err)
+            console.log(err);
+
+        res.send(prof);
+    });
+});
+
+app.post('/api/inventory/drop/:id/:count', (req, res) => {
+    if( !Pokeio )
+    {
+        return res.json([]);
+    }
+
+    var item_id = parseInt(req.params.id);
+    var count = parseInt(req.params.count);
+
+    Pokeio.DropItem(item_id, count, (err, data)=>{
+        if(err)
+            console.log(err);
+
+        res.send(data);
+    });
+});
 
 
 // SocketIO Events

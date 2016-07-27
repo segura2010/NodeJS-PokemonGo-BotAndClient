@@ -41,6 +41,7 @@ function init()
 		console.log("pokestop farmed: ", fort);
 		
 		$("#log").append("<br> <img src='/img/pokestop.png' style='width: 45px;'> PokeStop " + fort.FortId + " farmed! ");
+		getInventory();
 	});
 
 	socket.on('inventoryfull', function (fort) {
@@ -58,6 +59,8 @@ function init()
 	// restore pokemon whitelist from localstorage
 	$( document ).ready(function() {
 	    restorePokemonWhitelist();
+	    getUserProfile();
+	    getInventory();
 	});
 }
 
@@ -313,6 +316,69 @@ function restorePokemonWhitelist()
 {
 	var pokemons = localStorage.getItem("pokemonwhitelist");
 	$("#catchOnlyTxt").val(pokemons);
+}
+
+
+function getInventory()
+{
+	$.get("/api/inventory", function(inventory){
+		console.log(inventory);
+
+		var inventoryDiv = $("#inventory");
+		inventoryDiv.html("");
+		var totalUsedSpace = 0;
+		for(var i in inventory)
+		{
+			var item = inventory[i];
+			var count = item.count || 0;
+			inventoryDiv.append("<p> "+item.name+": "+count+" <a href='#!' onclick='showDeleteItem(\""+item.name+"\",\""+item.item+"\")'><i class='material-icons' style='color:red'>delete</i></a> </p>");
+			totalUsedSpace += count;
+		}
+
+		$("#inventoryUsedSpace").html(totalUsedSpace);
+	});
+}
+
+function getUserProfile()
+{
+	$.get("/api/profile", function(profile){
+		console.log(profile);
+
+		var pokecoin = profile.currency[0].amount || 0;
+
+		$("#username").html(profile.username);
+		$("#stardust").html(profile.currency[1].amount);
+		$("#pokecoin").html(pokecoin);
+	});
+}
+
+function getAllUserInfo()
+{
+	getUserProfile();
+	getInventory();
+}
+
+function deleteItem(id, count)
+{
+	$.post("/api/inventory/drop/"+id+"/"+count, function(data){
+		console.log(data);
+		if(data.result == 1)
+		{
+			Materialize.toast('Item Deleted!', 4000);
+		}
+		else
+		{
+			Materialize.toast('Error deleting item!', 4000);
+		}
+
+		getInventory();
+	});
+}
+
+function showDeleteItem(name, id)
+{
+	var count = prompt("How many '"+name+"' do you want to drop?", 0);
+	deleteItem(id, count);
 }
 
 
