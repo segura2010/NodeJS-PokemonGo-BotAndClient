@@ -533,6 +533,11 @@ function HeartbeatBotLogic(err, hb, cb) {
             if(catchWildPokemons || catchOnly.indexOf(pokemon.name.toLowerCase()) >= 0)
             {
                 catchPokemon( currentPokemon, pokemon, function(err, catchresult){
+                    if(!catchresult)
+                    {
+                        console.log("Catch pokemon failed!");
+                        return asCb();
+                    }
                     var status = ['Unexpected error', 'Successful catch', 'Catch Escape', 'Catch Flee', 'Missed Catch'];
                     console.log(status[catchresult.Status]);
 
@@ -571,6 +576,11 @@ function HeartbeatBotLogic(err, hb, cb) {
                     Pokeio.GetFort(fort.FortId, fort.Latitude, fort.Longitude, function(err, fortresponse){
                         //console.log("FORT result:");
                         //console.log(fortresponse);
+                        if(!fortresponse)
+                        {
+                            console.log("Fort farming failed!");
+                            return asCb();
+                        }
                         if(fortresponse.result == 1)
                         {
                             console.log(fort.FortId + " farmed!!");
