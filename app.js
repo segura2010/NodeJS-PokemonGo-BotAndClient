@@ -119,7 +119,7 @@ app.post('/api/start/:lng/:lat', (req, res) => {
             console.log('[i] Stardust: ' + profile.currency[1].amount);
 
             Pokeio.Heartbeat(function(err,hb) {
-                if(err)
+                if(err || !hb)
                 {
                     console.log(err);
                 }
@@ -261,7 +261,7 @@ app.get('/api/inventory', (req, res) => {
 
     Pokeio.GetInventory((err, inv)=>{
         if(err)
-            console.log(err);
+            return console.log(err);
 
         var inventory = inv.inventory_delta.inventory_items;
         var items = [];
