@@ -121,7 +121,7 @@ app.post('/api/start/:lng/:lat', (req, res) => {
             Pokeio.Heartbeat(function(err,hb) {
                 if(err || !hb)
                 {
-                    console.log(err);
+                    return console.log(err);
                 }
 
                 for (var i = hb.cells.length - 1; i >= 0; i--)
