@@ -498,9 +498,9 @@ function farmPokestops()
 
 
 function HeartbeatBotLogic(err, hb, cb) {
-    if(err)
+    if(err || !hb)
     {
-        console.log(err);
+        return console.log(err);
     }
 
     var nearbyPokemons = [];
