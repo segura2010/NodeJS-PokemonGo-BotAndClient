@@ -56,6 +56,7 @@ var waitingTime = constWaitingTime = 500; // 1 sec of interval to go to the next
 var minDistanceToFort = 100; // in meters
 var pokeballType = 1; // pokeball type the bot will use to catch pokemons
 var speed = 5; // km/h
+var timeBetweenCatch = 3000; // 3 secs between pokemon catch tries
 
 // Items info
 var itemsInfo = require('./resources/items.json');
@@ -571,7 +572,7 @@ function HeartbeatBotLogic(err, hb, cb) {
                     pokemon.result = status[catchresult.Status];
                     io.emit("pokemoncatchresult", pokemon);
 
-                    asCb();
+                    setTimeout(asCb, timeBetweenCatch);
                 });
             }
             else
