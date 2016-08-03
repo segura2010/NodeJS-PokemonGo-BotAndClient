@@ -48,7 +48,14 @@
 				<br>
 				<button onclick="getNearPokeStops()">Get Near PokeStops</button>
 				<br>
-				<button onclick="getNearObjects()">Get Near Objects</button>
+
+				<input id="speedTxt" name="speedTxt" type="text" placeholder="Speed. Defeult=5KM/h" value=""/>
+				<label for="speedTxt">Change bot speed (KM/h)</label>
+				<button onclick="changeSpeed()">ChangeSpeed</button>
+
+				<br>
+				<!-- <button onclick="getNearObjects()">Get Near Objects</button> -->
+				
 				<br><br>
 				
 				<input id="toggleCatchPokemonsCheckbox" name="toggleCatchPokemonsCheckbox" type="checkbox" value="catchpokemons" onchange="toggleCatchPokemons()" />

@@ -58,6 +58,8 @@ function init()
 	
 	socket.on('pokeballchanged', onPokeballChanged);
 
+	socket.on('speedchanged', onSpeedChanged);
+
 	// restore pokemon whitelist from localstorage
 	$( document ).ready(function() {
 	    restorePokemonWhitelist();
@@ -159,6 +161,20 @@ function getRoute(start, end, cb)
 
 			console.log(response);
 
+			var steps = response.routes[0].legs[0].steps;
+	        var points = [];
+	        for(var i in steps)
+	        {
+	            var distance = steps[i].distance.value * 0.001; // meters to kilometers
+	            var p = {
+	                lat: steps[i].end_location.lat(),
+	                lng: steps[i].end_location.lng(),
+	                distance: distance
+	            };
+	            points.push(p);
+	        }
+
+	        /*
 			var points = response.routes[0].overview_path;
 			var returnPoints = [];
 			for(p in points)
@@ -166,8 +182,9 @@ function getRoute(start, end, cb)
 				console.log( points[p].lng(), points[p].lat() );
 				returnPoints.push({lng:points[p].lng(), lat:points[p].lat()});
 			}
+			*/
 
-			cb( returnPoints );
+			cb( points );
 		}
 	});
 }
@@ -396,6 +413,17 @@ function pokeballChange()
 function onPokeballChanged(type)
 {
 	$("#pokeballTypeSelector").val(type);
+}
+
+function changeSpeed()
+{
+	var value = $("#speedTxt").val();
+	socket.emit('speedchange', value);
+}
+
+function onSpeedChanged(speed)
+{
+	$("#speedTxt").val(speed);
 }
 
 

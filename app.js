@@ -52,9 +52,10 @@ var catchWildPokemons = false; // tell the bot if he must catch or not pokemons
 var catchOnly = []; // if catchWildPokemons = false, we will catch only pokemons on catchOnly array
 var pokestops = []; // save near pokestops
 var farmingActivated = false;
-var waitingTime = 500; // 1 sec of interval to go to the next waypoint in a route
+var waitingTime = constWaitingTime = 500; // 1 sec of interval to go to the next waypoint in a route
 var minDistanceToFort = 100; // in meters
 var pokeballType = 1; // pokeball type the bot will use to catch pokemons
+var speed = 5; // km/h
 
 // Items info
 var itemsInfo = require('./resources/items.json');
@@ -340,12 +341,27 @@ io.on('connection', function (socket) {
         io.emit('pokeballchanged', pokeballType);
     });
 
+    socket.on('speedchange', function (s) {
+        speed = parseFloat(s);
+        console.log("Speed set to: ", speed);
+        io.emit('speedchanged', speed);
+    });
+
     socket.on('walk', function (data) {
         // test
         var points = data;
 
         async.eachSeries(points, (p, cb)=>{
-            console.log("Going to ", p);
+            if(p.distance)
+            {   // calculate time depending on speed
+                waitingTime = p.distance / speed;
+                waitingTime = waitingTime * 3600000; // hours to milliseconds
+            }
+            else
+            {
+                waitingTime = constWaitingTime;
+            }
+            console.log("Going to ", p, " ["+ speed +"km/h; "+ waitingTime +"ms]");
             io.emit("locationchanged", p); // send new location
 
             var location = {
@@ -389,9 +405,11 @@ function getRoute(olat, olng, dlat, dlng, cb)
         var points = [];
         for(var i in steps)
         {
+            var distance = steps[i].distance.value * 0.001; // meters to kilometers
             var p = {
                 lat: steps[i].end_location.lat,
-                lng: steps[i].end_location.lng
+                lng: steps[i].end_location.lng,
+                distance: distance
             };
             points.push(p);
         }
@@ -466,7 +484,16 @@ function farmPokestops()
     var playerLocation = Pokeio.GetLocationCoords();
     getRoute(playerLocation.latitude, playerLocation.longitude, nearestPokestop.Latitude, nearestPokestop.Longitude, (points)=>{
         async.eachSeries(points, (p, cb)=>{
-            console.log("Going to ", p);
+            if(p.distance)
+            {   // calculate time depending on speed
+                waitingTime = p.distance / speed;
+                waitingTime = waitingTime * 3600000; // hours to milliseconds
+            }
+            else
+            {
+                waitingTime = constWaitingTime;
+            }
+            console.log("Going to ", p, " ["+ speed +"km/h; "+ waitingTime +"ms]");
             io.emit("locationchanged", p); // send new location
 
             var location = {
