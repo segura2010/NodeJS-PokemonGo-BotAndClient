@@ -572,7 +572,8 @@ function HeartbeatBotLogic(err, hb, cb) {
                     pokemon.result = status[catchresult.Status];
                     io.emit("pokemoncatchresult", pokemon);
 
-                    setTimeout(asCb, timeBetweenCatch);
+                    asCb();
+                    //setTimeout(asCb, timeBetweenCatch);
                 });
             }
             else
