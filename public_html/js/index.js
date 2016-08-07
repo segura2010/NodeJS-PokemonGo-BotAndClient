@@ -354,7 +354,7 @@ function getInventory()
 		{
 			var item = inventory[i];
 			var count = item.count || 0;
-			inventoryDiv.append("<p> "+item.name+": "+count+" <a href='#!' onclick='showDeleteItem(\""+item.name+"\",\""+item.item+"\")'><i class='material-icons' style='color:red'>delete</i></a> </p>");
+			inventoryDiv.append("<p> "+item.name+": "+count+" <a href='#!' onclick='showDeleteItem(\""+item.name+"\",\""+item.item_id+"\")'><i class='material-icons' style='color:red'>delete</i></a> </p>");
 			totalUsedSpace += count;
 		}
 

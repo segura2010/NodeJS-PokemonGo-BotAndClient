@@ -14,6 +14,8 @@ npm install
 
 This bot/client uses my own [fork](https://github.com/segura2010/Pokemon-GO-node-api) of [Pokemon-Go-node-api](https://github.com/Armax/Pokemon-GO-node-api). You can use the original API, but it could not work.
 
+**Due to latest API changes, we recommend you configure the example_config.json file with your real device information and rename it to config.json**
+
 This bot/client allows you to Log In with your PokemonGo account, and choose with clicks on the map where you want to go. The bot will create a route to go to the goal using Google Maps service, usign intermediate waypoints (to avoid teleportation and ban).
 
 Also, you can get near pokestops and show them on the map.

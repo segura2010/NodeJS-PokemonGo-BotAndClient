@@ -5,7 +5,7 @@ var URI = process.env.URI || "localhost";
 
 var USERNAME = process.env.POKEMON_USERNAME || "";
 var PASSWORD = process.env.POKEMON_PASSWORD || "";
-var PROVIDER = process.env.PROVIDER || "google";
+var PROVIDER = process.env.PROVIDER || "ptc";
 
 // Libs for HTTP Server (Web)
 var express = require('express');
@@ -30,8 +30,8 @@ app.use(bodyParser.json());
 
 
 // Pokemon Go Lib
-var PokemonGO = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
-//var PokemonGO = require('pokemon-go-node-api')
+//var PokemonGO = require('../Pokemon-GO-node-api/poke.io.js'); // for tests..
+var PokemonGO = require('pokemon-go-node-api')
 
 var Pokeio = null;
 
@@ -48,6 +48,7 @@ http.listen(PORT, function(){
 
 var inProgressEncounters = []; // to save encounters
 
+var config = require('./config.json') || {};
 var catchWildPokemons = false; // tell the bot if he must catch or not pokemons
 var catchOnly = []; // if catchWildPokemons = false, we will catch only pokemons on catchOnly array
 var pokestops = []; // save near pokestops
@@ -57,6 +58,7 @@ var minDistanceToFort = 100; // in meters
 var pokeballType = 1; // pokeball type the bot will use to catch pokemons
 var speed = 5; // km/h
 var timeBetweenCatch = 3000; // 3 secs between pokemon catch tries
+var device_info = config.device_info;
 
 // Items info
 var itemsInfo = require('./resources/items.json');
@@ -98,6 +100,8 @@ app.post('/api/start/:lng/:lat', (req, res) => {
 
     var actUsername = req.body.username || USERNAME;
     var actPassword = req.body.password || PASSWORD;
+
+    Pokeio.SetDeviceInfo(device_info);
 
     Pokeio.init(actUsername, actPassword, location, PROVIDER, (err) => {
         if (err) throw err;
@@ -270,9 +274,9 @@ app.get('/api/inventory', (req, res) => {
         for(var i in inventory)
         {
             var item = inventory[i].inventory_item_data.item;
-            if(item && item.item)
+            if(item && item.item_id)
             {
-                item.name = itemsInfo[item.item];
+                item.name = itemsInfo[item.item_id];
                 items.push(item);
             }
         }
