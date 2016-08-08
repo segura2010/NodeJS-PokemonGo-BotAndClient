@@ -5,7 +5,7 @@ var URI = process.env.URI || "localhost";
 
 var USERNAME = process.env.POKEMON_USERNAME || "";
 var PASSWORD = process.env.POKEMON_PASSWORD || "";
-var PROVIDER = process.env.PROVIDER || "ptc";
+var PROVIDER = process.env.PROVIDER || "google";
 
 // Libs for HTTP Server (Web)
 var express = require('express');
@@ -134,9 +134,8 @@ app.post('/api/start/:lng/:lat', (req, res) => {
                 {
                     if(hb.cells[i].NearbyPokemon[0])
                     {
-                        //console.log(Pokeio.pokemonlist[0])
                         var pokemon = Pokeio.pokemonlist[parseInt(hb.cells[i].NearbyPokemon[0].PokedexNumber)-1]
-                        console.log('[+] There is a ' + pokemon.name + ' at ' + hb.cells[i].NearbyPokemon[0].DistanceMeters.toString() + ' meters')
+                        console.log('[+] There is a ' + pokemon.name + ' nearby..');
                     }
                 }
 
@@ -177,7 +176,7 @@ app.get('/api/nearbypokemons/:lng/:lat', (req, res) => {
                 {
                     //console.log(Pokeio.pokemonlist[0])
                     var pokemon = Pokeio.pokemonlist[parseInt(hb.cells[i].NearbyPokemon[j].PokedexNumber)-1]
-                    console.log('[+] There is a ' + pokemon.name + ' at ' + hb.cells[i].NearbyPokemon[j].DistanceMeters.toString() + ' meters')
+                    console.log('[+] There is a ' + pokemon.name + ' nearby..')
                     // Set pokedex info
                     hb.cells[i].NearbyPokemon[j].pokedexinfo = pokemon;
                     hb.cells[i].NearbyPokemon[j].location = hb.cells[i].DecimatedSpawnPoint[0];
@@ -544,7 +543,7 @@ function HeartbeatBotLogic(err, hb, cb) {
             var currentPokemon = hb.cells[i].NearbyPokemon[j];
             //console.log(Pokeio.pokemonlist[0])
             var pokemon = Pokeio.pokemonlist[parseInt(currentPokemon.PokedexNumber)-1]
-            console.log('[+] There is a ' + pokemon.name + ' at ' + currentPokemon.DistanceMeters.toString() + ' meters');
+            console.log('[+] There is a ' + pokemon.name + ' nearby..');
             // Set pokedex info
             hb.cells[i].NearbyPokemon[j].pokedexinfo = pokemon;
             hb.cells[i].NearbyPokemon[j].location = hb.cells[i].DecimatedSpawnPoint[0];
